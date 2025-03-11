@@ -110,8 +110,9 @@ db.funcionarios.updateOne(
 //05 - Remova o campo "dataContratacao" de todos os funcionários usando o método updateMany():
 use("exercicio01")
 db.funcionarios.updateMany(
-    {dataContratacao: ""}
-)
+    {},
+    { $unset: { dataContratacao: "" } }
+);
 
  
 //06 - Crie um novo campo chamado "bonificacao" e atribua o valor 500 para todos os funcionários do departamento de TI usando o método updateMany():
@@ -180,11 +181,15 @@ db.funcionarios.find({
 //16 - Encontrar funcionários que trabalham em mais de um projeto: (Dica utilize o operador $size)
 use("exercicio01")
 db.funcionarios.find({
-    $expr: { $gt: [{ $size: $projetos }, 1] }
+    $expr: { $gt: [{ $size: "$projetos" }, 1] }
 })
  
 //17 - Encontrar funcionários cadastrados nos últimos 30 dias:
-//não sei
+use("exercicio01")
+const dataLimite = new Date();
+dataLimite.setDate(dataLimite.getDate() - 30);
+db.funcionarios.find({ dataCadastro: { $gte: dataLimite } });
+
 
 //18 - Encontrar funcionários cujo nome começa com "João":
 
@@ -193,47 +198,35 @@ db.funcionarios.find({nome: /^João/})
  
 //19 - Encontrar funcionários cujo nome termina com "Silva":
 use("exercicio01")
-db.funcionarios.find({nome: /Silva$/})
+db.funcionarios.find({nome: /Silva$/ })
  
 //20 - Encontrar funcionários cujo nome contenha Luis ou Luiz
 use("exercicio01")
-db.funcionarios.find(
-    {$or:[
-        {nome: /\bLuiz\b/},
-        {nome:/\bLuis\b/}
-    ]}
-)
+use('Exercicios')
+db.funcionarios.find({ nome: /Luis|Luiz/ });
  
 //21 - Encontrar todos os desenvolvedores do departamento de TI com salário maior que 4500:
 use("exercicio01")
 db.funcionarios.find({
-    $and: [
-        {departamento: "TI"},
-        {salario:{$gt: 4500}}
-    ]},
-{nome:1,cargo:1,salario:1,_id:0})
+    cargo: "Desenvolvedor",
+    departamento: "TI",
+    salario: { $gt: 4500 }
+});
  
 //22 - Encontrar todos os funcionários que não são desenvolvedores e que foram contratados em 2023:
 use("exercicio01")
 db.funcionarios.find({
-    $and: [
-    {cargo: {$ne: "Desenvolvedor"}},
-    {dataContratacao: {$gte: new Date("2023-01-01"),$lt: new Date("2024-01-01") }}
-    ]
+    cargo: { $ne: "Desenvolvedor" },
+    dataContratacao: { $gte: new Date("2023-01-01") }
 }, {nome:1,dataContratacao:1,cargo:1,_id:0})
  
 //23 - Encontrar funcionários que trabalham no "Projeto A" ou no "Projeto B" e que tenham salário menor ou igual a 5000:
+use('Exercicios')
 db.funcionarios.find({
-    $and: [
-      {
-        $or: [
-          { projetos: "Projeto A" },
-          { projetos: "Projeto B" }
-        ]
-      },
-      { salario: { "$lte": 5000 } }
-    ]
-  })
+    projetos: { $in: ["Projeto A", "Projeto B"] },
+    salario: { $lte: 5000 }
+});
+
  
 //24 - Encontrar funcionários que não sejam do departamento de TI e que não trabalhem no "Projeto A":
 use("exercicio01")
@@ -245,23 +238,19 @@ use("exercicio01")
 db.funcionarios.find({
     $or: [
       { sexo: "Feminino" },
-      { dataContratacao: { $lt: ("2023-01-01") }}
+      { dataContratacao: { $lt: new Date("2023-01-01") }}
     ]
   },{nome:1,dataContratacao:1,sexo:1,_id:0})
  
 //26 - Encontrar funcionários que são desenvolvedores ou analistas, com salário maior que 4000 e contratados a partir de 2023.
 use("exercicio01")
 db.funcionarios.find({
-  $and: [
-    {
-      $or: [
-        { cargo: "Desenvolvedor" },
-        { cargo: { $regex: "analista"} }
-      ]
-    },
-    { salario: { $gt: 4000 } },
-    { dataContratacao: { $gte: ("2023-01-01") } }
-  ]
-})
-//??
+    $or: [
+      { cargo: "Desenvolvedor" },
+      { cargo: "Analista" }
+    ],
+    salario: { $gt: 4000 },
+    dataContratacao: { $gte: new Date("2023-01-01") }
+  });
+
  
